@@ -1,6 +1,7 @@
 package com.russo.roma.model.usuarios;
 
 import java.time.LocalDate;
+import java.util.List;
 
 import lombok.Getter;
 import lombok.Setter;
@@ -13,6 +14,10 @@ public class Usuario {
     private String apellidos;
     private String email;
     private String password;
+    /**
+     * atributo para los roles del usuario
+     */
+    private List<String> roles;
     private LocalDate fechaNacimiento;
     private boolean activo;
 
