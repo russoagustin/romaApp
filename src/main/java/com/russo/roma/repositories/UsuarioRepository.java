@@ -27,9 +27,9 @@ public class UsuarioRepository implements IUsuarioRepository{
     // borrar usuario
     private String DELETE = "DELETE FROM usuarios WHERE id = ?";
 
-    private String CLIENTES = "SELECT user_id FROM clientes WHERE user_id = ?";
+    private String CLIENTES = "SELECT usuario_id FROM clientes WHERE usuario_id = ?";
 
-    private String MOZOS = "SELECT user_id FROM mozos WHERE user_id = ?";
+    private String MOZOS = "SELECT usuario_id FROM mozos WHERE usuario_id = ?";
 
 
     private JdbcTemplate jdbcTemplate;
@@ -51,16 +51,10 @@ public class UsuarioRepository implements IUsuarioRepository{
     @Override
     public Optional<Usuario> buscarPorId(Integer id) {
         Usuario usuario = jdbcTemplate.queryForObject(BUSQUEDA_ID, UsuarioRM, id);
-        
-        // traer los roles de las tablas clientes y mozos
+
+        // Obtener roles de las tablas clientes, mozos y administradores
         if (usuario != null){
-            List<String> roles = new ArrayList<>();
-            if (jdbcTemplate.queryForObject(CLIENTES, Integer.class, id) != null) {
-                roles.add("cliente");
-            }
-            if (jdbcTemplate.queryForObject(MOZOS, Integer.class, id) != null) {
-                roles.add("mozo");
-            }
+            List<String> roles = obtenerRolesPorUsuarioId(id);
             usuario.setRoles(roles);
         }
 
@@ -91,4 +85,27 @@ public class UsuarioRepository implements IUsuarioRepository{
         throw new UnsupportedOperationException("Unimplemented method 'modificar'");
     }
 
+
+    private List<String> obtenerRolesPorUsuarioId(int usuarioId) {
+        List<String> roles = new ArrayList<>();
+
+        if (existeEnTabla("clientes", usuarioId)) {
+            roles.add("CLIENTE");
+        }
+        if (existeEnTabla("mozos", usuarioId)) {
+            roles.add("MOZO");
+        }
+        if (existeEnTabla("administradores", usuarioId)) {
+            roles.add("ADMIN");
+        }
+
+        return roles;
+    }
+
+    private boolean existeEnTabla(String tabla, int usuarioId) {
+        String sql = "SELECT EXISTS(SELECT 1 FROM " + tabla + " WHERE usuario_id = ?)";
+        Boolean existe = jdbcTemplate.queryForObject(sql, Boolean.class, usuarioId);
+        return Boolean.TRUE.equals(existe);
+    }
+    
 }
