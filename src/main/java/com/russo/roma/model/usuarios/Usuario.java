@@ -17,7 +17,7 @@ public class Usuario {
     /**
      * atributo para los roles del usuario
      */
-    private List<String> roles;
+    private List<String> roles = null;
     private LocalDate fechaNacimiento;
     private boolean activo;
 
