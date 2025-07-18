@@ -7,6 +7,7 @@ import java.util.Optional;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.russo.roma.model.usuarios.Usuario;
 
@@ -19,18 +20,20 @@ public class UsuarioRepository implements IUsuarioRepository{
     private String BUSQUEDA_ID = "SELECT * FROM usuarios WHERE id = ?";
 
     // insertar usuario
-    private String INSERTAR = "INSERT INTO usuarios (nombres,apellidos,email,password,fecha_nac, activo) VALUES (?,?,?,?,?,?)";
+    private String INSERTAR = "INSERT INTO usuarios (nombres,apellidos,email,contrasena,fecha_nac, activo) VALUES (?,?,?,md5(?),?,?)";
 
     // buscar por nonmbre
     private String BUSQUEDA_NOMBRE = "SELECT * FROM usuarios WHERE nombres LIKE ?";
 
     // borrar usuario
-    private String DELETE = "DELETE FROM usuarios WHERE id = ?";
+    private String BORRAR = "DELETE FROM usuarios WHERE id = ?";
 
-    private String CLIENTES = "SELECT usuario_id FROM clientes WHERE usuario_id = ?";
+    // modificar usuario
+    private String MODIFICAR = "UPDATE usuarios SET nombres = ?, apellidos = ?, email = ?, contrasena = md5(?), activo = ?, fecha_nac = ? WHERE id = ?";
 
-    private String MOZOS = "SELECT usuario_id FROM mozos WHERE usuario_id = ?";
+    private String CLIENTE = "INSERT INTO clientes (usuario_id) VALUES (?)";
 
+    private String BUSCAR_EMAIL = "SELECT id FROM usuarios WHERE email = ?";
 
     private JdbcTemplate jdbcTemplate;
     // inyección de dependencias
@@ -50,7 +53,13 @@ public class UsuarioRepository implements IUsuarioRepository{
 
     @Override
     public Optional<Usuario> buscarPorId(Integer id) {
-        Usuario usuario = jdbcTemplate.queryForObject(BUSQUEDA_ID, UsuarioRM, id);
+        Usuario usuario;
+
+        try {
+            usuario = jdbcTemplate.queryForObject(BUSQUEDA_ID, UsuarioRM, id);
+        } catch (org.springframework.dao.EmptyResultDataAccessException e) {
+            usuario = null;
+        }
 
         // Obtener roles de las tablas clientes, mozos y administradores
         if (usuario != null){
@@ -63,26 +72,54 @@ public class UsuarioRepository implements IUsuarioRepository{
 
     @Override
     public List<Usuario> buscarPorNombre(String nombre) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'buscarPorNombre'");
+        List<Usuario> usuarios;
+        usuarios = jdbcTemplate.query(BUSQUEDA_NOMBRE, UsuarioRM, "%" + nombre + "%");
+        // Obtener roles de las tablas clientes, mozos y administradores
+        for (Usuario usuario : usuarios) {
+            List<String> roles = obtenerRolesPorUsuarioId(usuario.getId());
+            usuario.setRoles(roles);
+        }
+        return usuarios;
+    }
+
+    // nota: las etiquetas Transactional hacen rollback automáticamente en caso de excepción.
+    
+    @Override
+    @Transactional
+    public void alta(Usuario usuario){
+        //Si el usuario se inserta sin error cargarlo en la tabla clientes
+        jdbcTemplate.update(INSERTAR,
+            usuario.getNombres(),
+            usuario.getApellidos(),
+            usuario.getEmail(),
+            usuario.getPassword(),
+            usuario.getFechaNacimiento(),
+            usuario.isActivo()
+        );
+        //Obtener el ID del usuario recién insertado
+        //Busco por el email que es un campo único
+        Integer usuarioId = jdbcTemplate.queryForObject(BUSCAR_EMAIL, Integer.class, usuario.getEmail());
+        jdbcTemplate.update(CLIENTE, usuarioId);
     }
 
     @Override
-    public void alta(Usuario usuario) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'alta'");
+    @Transactional
+    public void borrar(Usuario usuario) throws org.springframework.dao.DataIntegrityViolationException{
+        jdbcTemplate.update(BORRAR, usuario.getId());
     }
 
     @Override
-    public void borrar(Usuario usuario) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'borrar'");
-    }
-
-    @Override
+    @Transactional
     public void modificar(Usuario usuario) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'modificar'");
+        jdbcTemplate.update(MODIFICAR,
+            usuario.getNombres(),
+            usuario.getApellidos(),
+            usuario.getEmail(),
+            usuario.getPassword(),
+            usuario.isActivo(),
+            usuario.getFechaNacimiento(),
+            usuario.getId()
+        );
     }
 
 
@@ -90,13 +127,13 @@ public class UsuarioRepository implements IUsuarioRepository{
         List<String> roles = new ArrayList<>();
 
         if (existeEnTabla("clientes", usuarioId)) {
-            roles.add("CLIENTE");
+            roles.add("ROLE_CLIENTE");
         }
         if (existeEnTabla("mozos", usuarioId)) {
-            roles.add("MOZO");
+            roles.add("ROLE_MOZO");
         }
         if (existeEnTabla("administradores", usuarioId)) {
-            roles.add("ADMIN");
+            roles.add("ROLE_ADMIN");
         }
 
         return roles;
@@ -105,7 +142,7 @@ public class UsuarioRepository implements IUsuarioRepository{
     private boolean existeEnTabla(String tabla, int usuarioId) {
         String sql = "SELECT EXISTS(SELECT 1 FROM " + tabla + " WHERE usuario_id = ?)";
         Boolean existe = jdbcTemplate.queryForObject(sql, Boolean.class, usuarioId);
-        return Boolean.TRUE.equals(existe);
+        return existe;
     }
     
 }
