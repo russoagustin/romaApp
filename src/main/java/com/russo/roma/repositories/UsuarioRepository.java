@@ -9,6 +9,7 @@ import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.russo.roma.model.usuarios.Rol;
 import com.russo.roma.model.usuarios.Usuario;
 
 @Repository
@@ -17,23 +18,30 @@ public class UsuarioRepository implements IUsuarioRepository{
     //CONSULTAS SQL
     
     //buscar por id
-    private String BUSQUEDA_ID = "SELECT * FROM usuarios WHERE id = ?";
+    private static final String BUSQUEDA_ID = "SELECT * FROM usuarios WHERE id = ?";
 
     // insertar usuario
-    private String INSERTAR = "INSERT INTO usuarios (nombres,apellidos,email,contrasena,fecha_nac, activo) VALUES (?,?,?,md5(?),?,?)";
+    private static final String INSERTAR = "INSERT INTO usuarios (nombres,apellidos,email,contrasena,fecha_nac, activo) VALUES (?,?,?,md5(?),?,?)";
 
     // buscar por nonmbre
-    private String BUSQUEDA_NOMBRE = "SELECT * FROM usuarios WHERE nombres LIKE ?";
+    private static final String BUSQUEDA_NOMBRE = "SELECT * FROM usuarios WHERE nombres LIKE ?";
 
     // borrar usuario
-    private String BORRAR = "DELETE FROM usuarios WHERE id = ?";
+    private static final String BORRAR = "DELETE FROM usuarios WHERE id = ?";
 
     // modificar usuario
-    private String MODIFICAR = "UPDATE usuarios SET nombres = ?, apellidos = ?, email = ?, contrasena = md5(?), activo = ?, fecha_nac = ? WHERE id = ?";
+    private static final String MODIFICAR = "UPDATE usuarios SET nombres = ?, apellidos = ?, email = ?, contrasena = md5(?), activo = ?, fecha_nac = ? WHERE id = ?";
 
-    private String CLIENTE = "INSERT INTO clientes (usuario_id) VALUES (?)";
+    // añadir a la tabla clientes (obtiene el rol CLIENTE)
+    private static final String CLIENTE = "INSERT INTO clientes (usuario_id) VALUES (?)";
 
-    private String BUSCAR_EMAIL = "SELECT id FROM usuarios WHERE email = ?";
+    // añadir a la tabla mozo (obtiene el rol MOZO)
+    private static final String MOZO = "INSERT INTO mozos (usuario_id) VALUES (?)";
+
+    // añadir a la tabla administradores (obtiene el rol ADMIN)
+    private static final String ADMIN = "INSERT INTO administradores (usuario_id) VALUES (?)";
+
+    private static final String BUSCAR_EMAIL = "SELECT id FROM usuarios WHERE email = ?";
 
     private JdbcTemplate jdbcTemplate;
     // inyección de dependencias
@@ -63,7 +71,7 @@ public class UsuarioRepository implements IUsuarioRepository{
 
         // Obtener roles de las tablas clientes, mozos y administradores
         if (usuario != null){
-            List<String> roles = obtenerRolesPorUsuarioId(id);
+            List<Rol> roles = obtenerRolesPorUsuarioId(id);
             usuario.setRoles(roles);
         }
 
@@ -76,7 +84,7 @@ public class UsuarioRepository implements IUsuarioRepository{
         usuarios = jdbcTemplate.query(BUSQUEDA_NOMBRE, UsuarioRM, "%" + nombre + "%");
         // Obtener roles de las tablas clientes, mozos y administradores
         for (Usuario usuario : usuarios) {
-            List<String> roles = obtenerRolesPorUsuarioId(usuario.getId());
+            List<Rol> roles = obtenerRolesPorUsuarioId(usuario.getId());
             usuario.setRoles(roles);
         }
         return usuarios;
@@ -120,20 +128,33 @@ public class UsuarioRepository implements IUsuarioRepository{
             usuario.getFechaNacimiento(),
             usuario.getId()
         );
+
+        List<Rol> roles = usuario.getRoles();
+        Integer usuarioId = usuario.getId();
+
+        if (roles.contains(Rol.ROLE_CLIENTE) && usuarioId != null) {
+            jdbcTemplate.update(CLIENTE, usuarioId);
+        }
+        if (roles.contains(Rol.ROLE_MOZO) && usuarioId != null) {
+            jdbcTemplate.update(MOZO, usuarioId);
+        }
+        if (roles.contains(Rol.ROLE_ADMIN) && usuarioId != null) {
+            jdbcTemplate.update(ADMIN, usuarioId);
+        }
     }
 
 
-    private List<String> obtenerRolesPorUsuarioId(int usuarioId) {
-        List<String> roles = new ArrayList<>();
+    private List<Rol> obtenerRolesPorUsuarioId(int usuarioId) {
+        List<Rol> roles = new ArrayList<>();
 
         if (existeEnTabla("clientes", usuarioId)) {
-            roles.add("ROLE_CLIENTE");
+            roles.add(Rol.ROLE_CLIENTE);
         }
         if (existeEnTabla("mozos", usuarioId)) {
-            roles.add("ROLE_MOZO");
+            roles.add(Rol.ROLE_MOZO);
         }
         if (existeEnTabla("administradores", usuarioId)) {
-            roles.add("ROLE_ADMIN");
+            roles.add(Rol.ROLE_ADMIN);
         }
 
         return roles;
