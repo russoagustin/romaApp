@@ -94,7 +94,7 @@ public class UsuarioRepository implements IUsuarioRepository{
     
     @Override
     @Transactional
-    public void alta(Usuario usuario){
+    public Integer alta(Usuario usuario){
         //Si el usuario se inserta sin error cargarlo en la tabla clientes
         jdbcTemplate.update(INSERTAR,
             usuario.getNombres(),
@@ -108,6 +108,7 @@ public class UsuarioRepository implements IUsuarioRepository{
         //Busco por el email que es un campo único
         Integer usuarioId = jdbcTemplate.queryForObject(BUSCAR_EMAIL, Integer.class, usuario.getEmail());
         jdbcTemplate.update(CLIENTE, usuarioId);
+        return usuarioId;
     }
 
     @Override
@@ -130,6 +131,11 @@ public class UsuarioRepository implements IUsuarioRepository{
         );
 
         List<Rol> roles = usuario.getRoles();
+        
+        if (roles==null) {
+            return;
+        }
+
         Integer usuarioId = usuario.getId();
 
         if (roles.contains(Rol.ROLE_CLIENTE) && usuarioId != null) {

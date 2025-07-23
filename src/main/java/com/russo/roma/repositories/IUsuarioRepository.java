@@ -10,7 +10,7 @@ public interface IUsuarioRepository{
 
     public Optional<Usuario> buscarPorId(Integer id);
     public List<Usuario> buscarPorNombre(String nombre);
-    public void alta(Usuario usuario);
+    public Integer alta(Usuario usuario);
     public void borrar(Usuario usuario);
     public void modificar(Usuario usuario);
 

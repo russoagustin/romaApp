@@ -1,26 +1,44 @@
 package com.russo.roma.services;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
+
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.russo.roma.model.dto.UsuarioDTO;
 import com.russo.roma.model.usuarios.Rol;
+import com.russo.roma.model.usuarios.TokenVerificacion;
 import com.russo.roma.model.usuarios.Usuario;
 import com.russo.roma.repositories.IUsuarioRepository;
+import com.russo.roma.repositories.TokenVerificacionRepository;
 
+@Service
 public class UsuarioService implements IUsuarioServices{
 
     private IUsuarioRepository usuarioRepository;
+    private TokenVerificacionRepository tokenRepo;
 
-    public UsuarioService(IUsuarioRepository usuarioRepository) {
+    public UsuarioService(IUsuarioRepository usuarioRepository, TokenVerificacionRepository tokenRepo) {
         this.usuarioRepository = usuarioRepository;
+        this.tokenRepo = tokenRepo;
     }
 
     @Override
-    public void confirmarCuenta(Usuario usuario) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'confirmarCuenta'");
+    @Transactional
+    public void confirmarCuenta(Integer usuarioId, String token) {
+        TokenVerificacion tokenVerificacion = tokenRepo.buscarPorUsuarioId(usuarioId);
+        Optional<Usuario> usuarioOpt = usuarioRepository.buscarPorId(usuarioId);
+
+        if (usuarioOpt.isPresent() && tokenVerificacion.getToken().toString().equals(token)) {
+            Usuario usuario = usuarioOpt.get();
+            usuario.setActivo(true);
+            usuario.setRoles(null);
+            usuarioRepository.modificar(usuario);
+        }
     }
 
     @Override
@@ -107,12 +125,26 @@ public class UsuarioService implements IUsuarioServices{
 
     @Override
     public void modificarUsuario(Usuario usuario) {
+        Optional<Usuario> usuarioOpt = usuarioRepository.buscarPorId(usuario.getId());
+        Usuario u = usuarioOpt.orElseThrow();
+
+        usuario.setActivo(u.isActivo()); //evita que se pueda modificar el estado.
+
         usuarioRepository.modificar(usuario);
     }
 
     @Override
     public void altaUsuario(Usuario usuario) {
-        usuarioRepository.alta(usuario);
+        usuario.setActivo(false);
+        Integer usuarioId = usuarioRepository.alta(usuario);
+        
+        TokenVerificacion token = new TokenVerificacion();
+        token.setToken(UUID.randomUUID());
+        token.setFechaExpiracion(LocalDateTime.now().plusHours(24));
+        token.setUsuarioId(usuarioId);
+        
+        tokenRepo.altaToken(token);
+        
     }
 
 }
