@@ -8,7 +8,7 @@ import com.russo.roma.model.usuarios.Usuario;
 
 public interface IUsuarioServices {
 
-    public void confirmarCuenta(Integer usuarioId, String token);
+    public void confirmarCuenta(String token);
     public void darBajaUsuario(Integer idUsuario);
     public void restablecerContrasena(String email, String contrasena);
     public void activarUsuario(Integer idUsuario);
@@ -19,6 +19,6 @@ public interface IUsuarioServices {
     public List<UsuarioDTO> buscarUsuarioPorNombre(String nombre);
     public void borrarUsuario(Usuario usuario);
     public void modificarUsuario(Usuario usuario);
-    public void altaUsuario(Usuario usuario);
+    public Integer altaUsuario(Usuario usuario);
 
 }

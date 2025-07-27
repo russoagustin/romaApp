@@ -20,6 +20,7 @@ public class TokenVerificacionRepository {
 
     private static final String ALTA = "INSERT INTO verificacion_tokens (token,usuario_id,fecha_expiracion) VALUES (?,?,?)";
     private static final String BUSCAR_USUARIO = "SELECT * FROM verificacion_tokens WHERE usuario_id = ? ORDER BY fecha_expiracion DESC LIMIT 1";
+    private static final String BUSCAR_TOKEN = "SELECT * FROM verificacion_tokens WHERE token = ?";
 
 
     RowMapper<TokenVerificacion> rowMapper = ((rs,rowNum)-> new TokenVerificacion(
@@ -38,6 +39,10 @@ public class TokenVerificacionRepository {
      */
     public TokenVerificacion buscarPorUsuarioId(Integer usuarioId){
         return jdbcTemplate.queryForObject(BUSCAR_USUARIO, rowMapper, usuarioId);   
+    }
+
+    public TokenVerificacion buscarPorToken(String token){
+        return jdbcTemplate.queryForObject(BUSCAR_TOKEN,rowMapper,token);
     }
 
     @Transactional

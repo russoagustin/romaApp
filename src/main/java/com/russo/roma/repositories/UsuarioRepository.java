@@ -7,7 +7,6 @@ import java.util.Optional;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Repository;
-import org.springframework.transaction.annotation.Transactional;
 
 import com.russo.roma.model.usuarios.Rol;
 import com.russo.roma.model.usuarios.Usuario;
@@ -32,14 +31,6 @@ public class UsuarioRepository implements IUsuarioRepository{
     // modificar usuario
     private static final String MODIFICAR = "UPDATE usuarios SET nombres = ?, apellidos = ?, email = ?, contrasena = md5(?), activo = ?, fecha_nac = ? WHERE id = ?";
 
-    // añadir a la tabla clientes (obtiene el rol CLIENTE)
-    private static final String CLIENTE = "INSERT INTO clientes (usuario_id) VALUES (?)";
-
-    // añadir a la tabla mozo (obtiene el rol MOZO)
-    private static final String MOZO = "INSERT INTO mozos (usuario_id) VALUES (?)";
-
-    // añadir a la tabla administradores (obtiene el rol ADMIN)
-    private static final String ADMIN = "INSERT INTO administradores (usuario_id) VALUES (?)";
 
     private static final String BUSCAR_EMAIL = "SELECT id FROM usuarios WHERE email = ?";
 
@@ -93,7 +84,6 @@ public class UsuarioRepository implements IUsuarioRepository{
     // nota: las etiquetas Transactional hacen rollback automáticamente en caso de excepción.
     
     @Override
-    @Transactional
     public Integer alta(Usuario usuario){
         //Si el usuario se inserta sin error cargarlo en la tabla clientes
         jdbcTemplate.update(INSERTAR,
@@ -104,21 +94,17 @@ public class UsuarioRepository implements IUsuarioRepository{
             usuario.getFechaNacimiento(),
             usuario.isActivo()
         );
-        //Obtener el ID del usuario recién insertado
         //Busco por el email que es un campo único
         Integer usuarioId = jdbcTemplate.queryForObject(BUSCAR_EMAIL, Integer.class, usuario.getEmail());
-        jdbcTemplate.update(CLIENTE, usuarioId);
         return usuarioId;
     }
 
     @Override
-    @Transactional
-    public void borrar(Usuario usuario) throws org.springframework.dao.DataIntegrityViolationException{
+    public void borrar(Usuario usuario){
         jdbcTemplate.update(BORRAR, usuario.getId());
     }
 
     @Override
-    @Transactional
     public void modificar(Usuario usuario) {
         jdbcTemplate.update(MODIFICAR,
             usuario.getNombres(),
@@ -129,24 +115,6 @@ public class UsuarioRepository implements IUsuarioRepository{
             usuario.getFechaNacimiento(),
             usuario.getId()
         );
-
-        List<Rol> roles = usuario.getRoles();
-        
-        if (roles==null) {
-            return;
-        }
-
-        Integer usuarioId = usuario.getId();
-
-        if (roles.contains(Rol.ROLE_CLIENTE) && usuarioId != null) {
-            jdbcTemplate.update(CLIENTE, usuarioId);
-        }
-        if (roles.contains(Rol.ROLE_MOZO) && usuarioId != null) {
-            jdbcTemplate.update(MOZO, usuarioId);
-        }
-        if (roles.contains(Rol.ROLE_ADMIN) && usuarioId != null) {
-            jdbcTemplate.update(ADMIN, usuarioId);
-        }
     }
 
 
