@@ -1,4 +1,4 @@
-package com.russo.roma.repositories;
+package com.russo.roma.repositories.impl;
 
 import java.util.Optional;
 
@@ -9,6 +9,7 @@ import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Repository;
 
 import com.russo.roma.model.usuarios.Cliente;
+import com.russo.roma.repositories.interfaces.IGestor;
 
 @Repository
 public class ClienteRepository implements IGestor<Cliente, Integer>{

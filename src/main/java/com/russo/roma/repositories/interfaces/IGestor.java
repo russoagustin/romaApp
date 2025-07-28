@@ -1,4 +1,4 @@
-package com.russo.roma.repositories;
+package com.russo.roma.repositories.interfaces;
 
 import java.util.Optional;
 

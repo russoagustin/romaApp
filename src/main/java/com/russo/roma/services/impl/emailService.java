@@ -1,4 +1,4 @@
-package com.russo.roma.services;
+package com.russo.roma.services.impl;
 
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;

@@ -1,4 +1,4 @@
-package com.russo.roma.model.dto;
+package com.russo.roma.dto;
 
 public record UsuarioDTO(
     Integer id,

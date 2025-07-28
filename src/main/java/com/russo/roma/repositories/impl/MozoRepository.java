@@ -1,4 +1,4 @@
-package com.russo.roma.repositories;
+package com.russo.roma.repositories.impl;
 
 import java.util.Optional;
 
@@ -8,6 +8,7 @@ import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Repository;
 
 import com.russo.roma.model.usuarios.Mozo;
+import com.russo.roma.repositories.interfaces.IGestor;
 
 @Repository
 public class MozoRepository implements IGestor<Mozo,Integer>{

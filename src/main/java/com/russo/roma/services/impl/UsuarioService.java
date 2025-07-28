@@ -1,4 +1,4 @@
-package com.russo.roma.services;
+package com.russo.roma.services.impl;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -10,15 +10,16 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.russo.roma.model.dto.UsuarioDTO;
+import com.russo.roma.dto.UsuarioDTO;
 import com.russo.roma.model.usuarios.Administrador;
 import com.russo.roma.model.usuarios.Cliente;
 import com.russo.roma.model.usuarios.Mozo;
 import com.russo.roma.model.usuarios.TokenVerificacion;
 import com.russo.roma.model.usuarios.Usuario;
-import com.russo.roma.repositories.IGestor;
-import com.russo.roma.repositories.IUsuarioRepository;
-import com.russo.roma.repositories.TokenVerificacionRepository;
+import com.russo.roma.repositories.impl.TokenVerificacionRepository;
+import com.russo.roma.repositories.interfaces.IGestor;
+import com.russo.roma.repositories.interfaces.IUsuarioRepository;
+import com.russo.roma.services.interfaces.IUsuarioServices;
 
 @Service
 public class UsuarioService implements IUsuarioServices{

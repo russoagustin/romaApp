@@ -1,4 +1,4 @@
-package com.russo.roma.repositories;
+package com.russo.roma.repositories.impl;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -10,6 +10,7 @@ import org.springframework.stereotype.Repository;
 
 import com.russo.roma.model.usuarios.Rol;
 import com.russo.roma.model.usuarios.Usuario;
+import com.russo.roma.repositories.interfaces.IUsuarioRepository;
 
 @Repository
 public class UsuarioRepository implements IUsuarioRepository{

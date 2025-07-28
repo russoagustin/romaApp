@@ -17,9 +17,9 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.util.UriComponentsBuilder;
 
-import com.russo.roma.model.dto.UsuarioDTO;
+import com.russo.roma.dto.UsuarioDTO;
 import com.russo.roma.model.usuarios.Usuario;
-import com.russo.roma.services.IUsuarioServices;
+import com.russo.roma.services.interfaces.IUsuarioServices;
 
 @RestController
 @RequestMapping("/api/usuarios")
