@@ -1,5 +1,6 @@
 package com.russo.roma.repositories.impl;
 
+import java.time.LocalDateTime;
 import java.util.UUID;
 
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -18,7 +19,7 @@ public class TokenVerificacionRepository {
         this.jdbcTemplate = jdbcTemplate;
     }
 
-    private static final String ALTA = "INSERT INTO verificacion_tokens (token,usuario_id,fecha_expiracion) VALUES (?,?,?)";
+    private static final String ALTA = "INSERT INTO verificacion_tokens (token,usuario_id,fecha_expiracion, tipo) VALUES (?,?,?,?)";
     private static final String BUSCAR_USUARIO = "SELECT * FROM verificacion_tokens WHERE usuario_id = ? ORDER BY fecha_expiracion DESC LIMIT 1";
     private static final String BUSCAR_TOKEN = "SELECT * FROM verificacion_tokens WHERE token = ?";
 
@@ -27,7 +28,8 @@ public class TokenVerificacionRepository {
         rs.getInt("id"),
         UUID.fromString(rs.getString("token")),
         rs.getInt("usuario_id"),
-        rs.getTimestamp("fecha_expiracion").toLocalDateTime()
+        rs.getObject("fecha_expiracion", LocalDateTime.class),
+        rs.getString("tipo")
     ));
 
     /**
@@ -47,6 +49,6 @@ public class TokenVerificacionRepository {
 
     @Transactional
     public void altaToken(TokenVerificacion t){
-        jdbcTemplate.update(ALTA, t.getToken().toString(),t.getUsuarioId(),t.getFechaExpiracion());
+        jdbcTemplate.update(ALTA, t.getToken().toString(),t.getUsuarioId(),t.getFechaExpiracion(),t.getTipo());
     }
 }

@@ -17,6 +17,8 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.util.UriComponentsBuilder;
 
+import com.russo.roma.dto.PeticionRestablecerContraDto;
+import com.russo.roma.dto.ResetContrasenaDto;
 import com.russo.roma.dto.UsuarioDTO;
 import com.russo.roma.model.usuarios.Usuario;
 import com.russo.roma.services.interfaces.IUsuarioServices;
@@ -51,13 +53,15 @@ public class UsuariosController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<Void> modificarUsuario(@RequestBody Usuario usuario){
+    public ResponseEntity<Void> modificarUsuario(@RequestBody Usuario usuario, @PathVariable Integer id){
+        usuario.setId(id);
         usuarioService.modificarUsuario(usuario);
         return ResponseEntity.noContent().build();
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> borrarUsuario(@RequestBody Usuario usuario){
+    public ResponseEntity<Void> borrarUsuario(@RequestBody Usuario usuario, @PathVariable Integer id){
+        usuario.setId(id);
         usuarioService.borrarUsuario(usuario);
         return ResponseEntity.noContent().build();
     }
@@ -78,6 +82,18 @@ public class UsuariosController {
     public ResponseEntity<Void> hacerAdmin(@PathVariable Integer id){
         usuarioService.hacerAdmin(id);
         return ResponseEntity.noContent().build();
+    }
+
+    @PostMapping("/sol-restablecer")
+    public ResponseEntity<Void> solicitarRestablecerContraseña(@RequestBody PeticionRestablecerContraDto resetSol){
+        usuarioService.crearTokenCambioContrasena(resetSol.email());
+        return ResponseEntity.noContent().build();
+    }
+
+    @PostMapping("/restablecer")
+    public ResponseEntity<String> resetContrasena(@RequestBody ResetContrasenaDto res){
+        usuarioService.restablecerContrasena(res.token(), res.nuevaContrasena());
+        return ResponseEntity.ok("Se cambió correctamente la contraseña");
     }
 
 }

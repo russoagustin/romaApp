@@ -35,6 +35,8 @@ public class UsuarioRepository implements IUsuarioRepository{
 
     private static final String BUSCAR_EMAIL = "SELECT id FROM usuarios WHERE email = ?";
 
+    private static final String BUSQUEDA_EMAIL = "SELECT * FROM usuarios WHERE email = ?";
+
     private JdbcTemplate jdbcTemplate;
     // inyección de dependencias
     public UsuarioRepository(JdbcTemplate jdbc){
@@ -139,6 +141,25 @@ public class UsuarioRepository implements IUsuarioRepository{
         String sql = "SELECT EXISTS(SELECT 1 FROM " + tabla + " WHERE usuario_id = ?)";
         Boolean existe = jdbcTemplate.queryForObject(sql, Boolean.class, usuarioId);
         return existe;
+    }
+
+    @Override
+    public Optional<Usuario> buscarPorEmail(String email) {
+        Usuario usuario;
+
+        try {
+            usuario = jdbcTemplate.queryForObject(BUSQUEDA_EMAIL, UsuarioRM, email);
+        } catch (org.springframework.dao.EmptyResultDataAccessException e) {
+            usuario = null;
+        }
+
+        // Obtener roles de las tablas clientes, mozos y administradores
+        if (usuario != null){
+            List<Rol> roles = obtenerRolesPorUsuarioId(usuario.getId());
+            usuario.setRoles(roles);
+        }
+
+        return Optional.ofNullable(usuario);
     }
     
 }

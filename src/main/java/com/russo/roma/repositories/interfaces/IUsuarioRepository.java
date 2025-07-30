@@ -9,6 +9,7 @@ import com.russo.roma.model.usuarios.Usuario;
 public interface IUsuarioRepository{
 
     public Optional<Usuario> buscarPorId(Integer id);
+    public Optional<Usuario> buscarPorEmail(String email);
     public List<Usuario> buscarPorNombre(String nombre);
     public Integer alta(Usuario usuario);
     public void borrar(Usuario usuario);

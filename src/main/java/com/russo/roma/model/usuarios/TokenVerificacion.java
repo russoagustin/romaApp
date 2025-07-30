@@ -16,4 +16,5 @@ public class TokenVerificacion {
     private UUID token;
     private Integer usuarioId;
     private LocalDateTime fechaExpiracion;
+    private String tipo;
 }

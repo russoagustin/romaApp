@@ -10,7 +10,7 @@ public interface IUsuarioServices {
 
     public void confirmarCuenta(String token);
     public void darBajaUsuario(Integer idUsuario);
-    public void restablecerContrasena(String email, String contrasena);
+    public void restablecerContrasena(String token, String contrasena);
     public void activarUsuario(Integer idUsuario);
     public void hacerAdmin(Integer idUsuario);
     public void hacerMozo(Integer idUsuario);
@@ -20,5 +20,6 @@ public interface IUsuarioServices {
     public void borrarUsuario(Usuario usuario);
     public void modificarUsuario(Usuario usuario);
     public Integer altaUsuario(Usuario usuario);
+    public void crearTokenCambioContrasena(String emailusuario);
 
 }

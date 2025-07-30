@@ -21,6 +21,7 @@ import com.russo.roma.repositories.interfaces.IGestor;
 import com.russo.roma.repositories.interfaces.IUsuarioRepository;
 import com.russo.roma.services.interfaces.IUsuarioServices;
 
+
 @Service
 public class UsuarioService implements IUsuarioServices{
 
@@ -28,7 +29,7 @@ public class UsuarioService implements IUsuarioServices{
     private TokenVerificacionRepository tokenRepo;
 
     
-    private emailService email;
+    private emailService emailService;
     
     private IGestor<Cliente, Integer> clienteRepository;
 
@@ -48,17 +49,20 @@ public class UsuarioService implements IUsuarioServices{
         this.clienteRepository = clienteRepository;
         this.mozoRepository = mozoRepository;
         this.adminRepository = adminRepository;
-        this.email = email;
+        this.emailService = email;
     }
 
     @Override
     @Transactional
     public void confirmarCuenta(String token) {
         TokenVerificacion tokenVerificacion = tokenRepo.buscarPorToken(token);
-        Optional<Usuario> usuarioOpt = usuarioRepository.buscarPorId(tokenVerificacion.getUsuarioId());
+        Usuario usuario = usuarioRepository.buscarPorId(tokenVerificacion.getUsuarioId()).orElseThrow();
 
-        if (usuarioOpt.isPresent() && tokenVerificacion.getToken().toString().equals(token) && tokenVerificacion.getFechaExpiracion().isAfter(LocalDateTime.now())) {
-            Usuario usuario = usuarioOpt.get();
+        if (tokenVerificacion.getToken().toString().equals(token) && 
+            tokenVerificacion.getFechaExpiracion().isAfter(LocalDateTime.now()) && 
+            tokenVerificacion.getTipo().equals("VERIFICACION_EMAIL")
+        ) 
+        {
             usuario.setActivo(true);
             usuarioRepository.modificar(usuario);
         }
@@ -74,9 +78,19 @@ public class UsuarioService implements IUsuarioServices{
     }
 
     @Override
-    public void restablecerContrasena(String email, String contrasena) {
-        //TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'restablecerContrasena'");
+    @Transactional
+    public void restablecerContrasena(String token, String contrasena) {
+        TokenVerificacion tokenVerificacion = tokenRepo.buscarPorToken(token);
+        Usuario usuario = usuarioRepository.buscarPorId(tokenVerificacion.getUsuarioId()).orElseThrow();
+        System.out.println(tokenVerificacion.getFechaExpiracion());
+        if (tokenVerificacion.getToken().toString().equals(token) &&
+            tokenVerificacion.getFechaExpiracion().isAfter(LocalDateTime.now()) &&
+            tokenVerificacion.getTipo().equals("RESET_CONTRASENA")
+        ) 
+        {
+            usuario.setPassword(contrasena);
+            usuarioRepository.modificar(usuario);
+        }
     }
 
     @Override
@@ -144,11 +158,11 @@ public class UsuarioService implements IUsuarioServices{
 
     @Override
     public void modificarUsuario(Usuario usuario) {
-        Optional<Usuario> usuarioOpt = usuarioRepository.buscarPorId(usuario.getId());
-        Usuario u = usuarioOpt.orElseThrow();
-
+        Usuario u = usuarioRepository.buscarPorId(usuario.getId()).orElseThrow();
+        
+        usuario.setPassword(u.getPassword()); //evita que se pueda modificar la contraseña
         usuario.setActivo(u.isActivo()); //evita que se pueda modificar el estado.
-
+    
         usuarioRepository.modificar(usuario);
     }
 
@@ -169,14 +183,31 @@ public class UsuarioService implements IUsuarioServices{
         token.setToken(UUID.randomUUID());
         token.setFechaExpiracion(LocalDateTime.now().plusHours(24));
         token.setUsuarioId(usuarioId);
+        token.setTipo("VERIFICACION_EMAIL");
         tokenRepo.altaToken(token);
 
         // Enviar email con el link al endpoint para confirmar la cuenta
         // contenido del email provisorio para hacer pruebas
         String contenido= "http://localhost:8080/api/usuarios/confirmar-email?token=" + token.getToken().toString();
-        email.enviarEmail(usuario.getEmail(), "Confirmar Cuenta", contenido);
+        emailService.enviarEmail(usuario.getEmail(), "Confirmar Cuenta", contenido);
         
         return usuarioId;
     }
 
+    @Transactional
+    public void crearTokenCambioContrasena(String emailusuario){
+        Usuario usuario = usuarioRepository.buscarPorEmail(emailusuario)
+            .orElseThrow(()->new IllegalArgumentException("El email no está registrado"));
+
+        TokenVerificacion token = new TokenVerificacion();
+        token.setFechaExpiracion(LocalDateTime.now().plusMinutes(30));
+        token.setUsuarioId(usuario.getId());
+        token.setTipo("RESET_CONTRASENA");
+        token.setToken(UUID.randomUUID());
+        tokenRepo.altaToken(token);
+
+        String contenido = "Haz click en el siguiente link para cambiar tu contraseña";
+        emailService.enviarEmail(emailusuario, "Cambio Contraseña", contenido);
+        
+    }
 }
