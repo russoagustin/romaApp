@@ -17,8 +17,8 @@ public interface IUsuarioServices {
 
     public Optional<UsuarioDTO> buscarUsuarioPorId(Integer idUsuario);
     public List<UsuarioDTO> buscarUsuarioPorNombre(String nombre);
-    public void borrarUsuario(Usuario usuario);
-    public void modificarUsuario(Usuario usuario);
+    public void borrarUsuario(Integer id);
+    public void modificarUsuario(Integer id,Usuario usuario);
     public Integer altaUsuario(Usuario usuario);
     public void crearTokenCambioContrasena(String emailusuario);
 

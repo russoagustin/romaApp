@@ -36,7 +36,7 @@ public class UsuariosController {
     @PostMapping
     public ResponseEntity<Void> registrarUsuario(@RequestBody Usuario usuario, UriComponentsBuilder ucb){
         Integer id = usuarioService.altaUsuario(usuario);
-        URI uri = ucb.path("/api/usuario/{id}").buildAndExpand(id).toUri();
+        URI uri = ucb.path("/api/usuarios/{id}").buildAndExpand(id).toUri();
         return ResponseEntity.created(uri).build();
     }
 
@@ -54,15 +54,13 @@ public class UsuariosController {
 
     @PutMapping("/{id}")
     public ResponseEntity<Void> modificarUsuario(@RequestBody Usuario usuario, @PathVariable Integer id){
-        usuario.setId(id);
-        usuarioService.modificarUsuario(usuario);
+        usuarioService.modificarUsuario(id, usuario);
         return ResponseEntity.noContent().build();
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> borrarUsuario(@RequestBody Usuario usuario, @PathVariable Integer id){
-        usuario.setId(id);
-        usuarioService.borrarUsuario(usuario);
+    public ResponseEntity<Void> borrarUsuario(@PathVariable Integer id){
+        usuarioService.borrarUsuario(id);
         return ResponseEntity.noContent().build();
     }
 

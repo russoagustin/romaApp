@@ -4,15 +4,18 @@ import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.stereotype.Service;
 
+import com.russo.roma.services.interfaces.IEmailService;
+
 @Service
-public class emailService {
+public class EmailService implements IEmailService {
 
     private final JavaMailSender mailSender;
 
-    public emailService(JavaMailSender mailSender){
+    public EmailService(JavaMailSender mailSender){
         this.mailSender = mailSender;
     }
 
+    @Override
     public void enviarEmail(String destino, String asunto, String Contenido){
         SimpleMailMessage message = new SimpleMailMessage();
         message.setTo(destino);

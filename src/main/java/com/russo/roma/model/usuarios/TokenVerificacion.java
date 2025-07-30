@@ -17,4 +17,5 @@ public class TokenVerificacion {
     private Integer usuarioId;
     private LocalDateTime fechaExpiracion;
     private String tipo;
+    private Boolean usado;
 }

@@ -7,6 +7,7 @@ import java.util.Optional;
 import java.util.UUID;
 
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -29,7 +30,7 @@ public class UsuarioService implements IUsuarioServices{
     private TokenVerificacionRepository tokenRepo;
 
     
-    private emailService emailService;
+    private EmailService emailService;
     
     private IGestor<Cliente, Integer> clienteRepository;
 
@@ -37,9 +38,14 @@ public class UsuarioService implements IUsuarioServices{
 
     private IGestor<Administrador, Integer> adminRepository;
 
+    private static final String MENSAJE_NO_ENCONTRADO = "No se encontró el usuario";
+
+    @Value("${russo.app.dominio}")
+    private String DOMINIO;
+
     public UsuarioService(IUsuarioRepository usuarioRepository, 
                     TokenVerificacionRepository tokenRepo,
-                    emailService email,
+                    EmailService email,
                     @Qualifier("clienteRepository") IGestor<Cliente, Integer> clienteRepository,
                     @Qualifier("mozoRepository") IGestor<Mozo, Integer> mozoRepository,
                     @Qualifier("administradorRepository") IGestor<Administrador, Integer> adminRepository) {
@@ -58,20 +64,22 @@ public class UsuarioService implements IUsuarioServices{
         TokenVerificacion tokenVerificacion = tokenRepo.buscarPorToken(token);
         Usuario usuario = usuarioRepository.buscarPorId(tokenVerificacion.getUsuarioId()).orElseThrow();
 
-        if (tokenVerificacion.getToken().toString().equals(token) && 
-            tokenVerificacion.getFechaExpiracion().isAfter(LocalDateTime.now()) && 
-            tokenVerificacion.getTipo().equals("VERIFICACION_EMAIL")
+        if (tokenVerificacion.getFechaExpiracion().isAfter(LocalDateTime.now()) && 
+            tokenVerificacion.getTipo().equals("VERIFICACION_EMAIL") && 
+            !tokenVerificacion.getUsado()
         ) 
         {
+            tokenVerificacion.setUsado(true);
+            tokenRepo.marcarComoUsado(tokenVerificacion);   //marcamos el token como usado.
             usuario.setActivo(true);
-            usuarioRepository.modificar(usuario);
+            usuarioRepository.modificar(usuario);           //activo el usuario
         }
     }
 
     @Override
     public void darBajaUsuario(Integer idUsuario) {
         Usuario usuario = usuarioRepository.buscarPorId(idUsuario).
-                            orElseThrow(()-> new IllegalArgumentException("No se encontró el usuario"));
+                            orElseThrow(()-> new IllegalArgumentException(MENSAJE_NO_ENCONTRADO));
         
         usuario.setActivo(false);
         usuarioRepository.modificar(usuario);
@@ -82,10 +90,10 @@ public class UsuarioService implements IUsuarioServices{
     public void restablecerContrasena(String token, String contrasena) {
         TokenVerificacion tokenVerificacion = tokenRepo.buscarPorToken(token);
         Usuario usuario = usuarioRepository.buscarPorId(tokenVerificacion.getUsuarioId()).orElseThrow();
-        System.out.println(tokenVerificacion.getFechaExpiracion());
-        if (tokenVerificacion.getToken().toString().equals(token) &&
-            tokenVerificacion.getFechaExpiracion().isAfter(LocalDateTime.now()) &&
-            tokenVerificacion.getTipo().equals("RESET_CONTRASENA")
+
+        if (tokenVerificacion.getFechaExpiracion().isAfter(LocalDateTime.now()) &&
+            tokenVerificacion.getTipo().equals("RESET_CONTRASENA") &&
+            !tokenVerificacion.getUsado()
         ) 
         {
             usuario.setPassword(contrasena);
@@ -96,7 +104,7 @@ public class UsuarioService implements IUsuarioServices{
     @Override
     public void activarUsuario(Integer idUsuario) {
         Usuario usuario = usuarioRepository.buscarPorId(idUsuario).
-                            orElseThrow(()-> new IllegalArgumentException("No se encontró el usuario"));
+                            orElseThrow(()-> new IllegalArgumentException(MENSAJE_NO_ENCONTRADO));
         usuario.setActivo(true);
         usuarioRepository.modificar(usuario);
     }
@@ -107,7 +115,7 @@ public class UsuarioService implements IUsuarioServices{
     @Override
     public void hacerAdmin(Integer idUsuario) {
         usuarioRepository.buscarPorId(idUsuario).
-                        orElseThrow(()-> new IllegalArgumentException("No se encontró el usuario"));
+                        orElseThrow(()-> new IllegalArgumentException(MENSAJE_NO_ENCONTRADO));
         Administrador admin = new Administrador();
         admin.setId(idUsuario);
         adminRepository.alta(admin);
@@ -119,7 +127,7 @@ public class UsuarioService implements IUsuarioServices{
     @Override
     public void hacerMozo(Integer idUsuario) {
         usuarioRepository.buscarPorId(idUsuario)
-                        .orElseThrow(()-> new IllegalArgumentException("No se encontró el usuario"));
+                        .orElseThrow(()-> new IllegalArgumentException(MENSAJE_NO_ENCONTRADO));
         Mozo mozo = new Mozo();
         mozo.setId(idUsuario);
         mozoRepository.alta(mozo);
@@ -152,13 +160,16 @@ public class UsuarioService implements IUsuarioServices{
     }
 
     @Override
-    public void borrarUsuario(Usuario usuario) {
-        usuarioRepository.borrar(usuario);
+    public void borrarUsuario(Integer id) {
+        Usuario u = usuarioRepository.buscarPorId(id)
+            .orElseThrow(()-> new IllegalArgumentException(MENSAJE_NO_ENCONTRADO));
+        usuarioRepository.borrar(u);
     }
 
     @Override
-    public void modificarUsuario(Usuario usuario) {
-        Usuario u = usuarioRepository.buscarPorId(usuario.getId()).orElseThrow();
+    public void modificarUsuario(Integer id,Usuario usuario) {
+        Usuario u = usuarioRepository.buscarPorId(id)
+            .orElseThrow(()-> new IllegalArgumentException(MENSAJE_NO_ENCONTRADO));
         
         usuario.setPassword(u.getPassword()); //evita que se pueda modificar la contraseña
         usuario.setActivo(u.isActivo()); //evita que se pueda modificar el estado.
@@ -188,12 +199,13 @@ public class UsuarioService implements IUsuarioServices{
 
         // Enviar email con el link al endpoint para confirmar la cuenta
         // contenido del email provisorio para hacer pruebas
-        String contenido= "http://localhost:8080/api/usuarios/confirmar-email?token=" + token.getToken().toString();
+        String contenido = DOMINIO + "/api/usuarios/confirmar-email?token=" + token.getToken().toString();
         emailService.enviarEmail(usuario.getEmail(), "Confirmar Cuenta", contenido);
         
         return usuarioId;
     }
 
+    @Override
     @Transactional
     public void crearTokenCambioContrasena(String emailusuario){
         Usuario usuario = usuarioRepository.buscarPorEmail(emailusuario)
