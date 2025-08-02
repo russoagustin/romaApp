@@ -15,7 +15,7 @@ public interface IUsuarioServices {
     public void hacerAdmin(Integer idUsuario);
     public void hacerMozo(Integer idUsuario);
 
-    public Optional<UsuarioDTO> buscarUsuarioPorId(Integer idUsuario);
+    public UsuarioDTO buscarUsuarioPorId(Integer idUsuario);
     public List<UsuarioDTO> buscarUsuarioPorNombre(String nombre);
     public void borrarUsuario(Integer id);
     public void modificarUsuario(Integer id,Usuario usuario);

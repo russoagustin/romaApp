@@ -1,6 +1,7 @@
 package com.russo.roma.repositories.impl;
 
 import java.time.LocalDateTime;
+import java.util.Optional;
 import java.util.UUID;
 
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -35,13 +36,25 @@ public class TokenVerificacionRepository implements ITokenVerificacionRepository
     ));
 
     @Override
-    public TokenVerificacion buscarPorUsuarioId(Integer usuarioId){
-        return jdbcTemplate.queryForObject(BUSCAR_USUARIO, rowMapper, usuarioId);   
+    public Optional<TokenVerificacion> buscarPorUsuarioId(Integer usuarioId){
+        TokenVerificacion  tokenVer;
+        try {
+            tokenVer = jdbcTemplate.queryForObject(BUSCAR_USUARIO, rowMapper, usuarioId);
+        } catch (org.springframework.dao.EmptyResultDataAccessException e) {
+            tokenVer = null;
+        }
+        return Optional.ofNullable(tokenVer);
     }
 
     @Override
-    public TokenVerificacion buscarPorToken(String token){
-        return jdbcTemplate.queryForObject(BUSCAR_TOKEN,rowMapper,token);
+    public Optional<TokenVerificacion> buscarPorToken(String token){
+        TokenVerificacion tokenVer;
+        try {
+            tokenVer = jdbcTemplate.queryForObject(BUSCAR_TOKEN,rowMapper,token);
+        } catch (org.springframework.dao.EmptyResultDataAccessException e) {
+            tokenVer = null;
+        }
+        return Optional.ofNullable(tokenVer);
     }
 
     @Override

@@ -12,6 +12,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.russo.roma.dto.UsuarioDTO;
+import com.russo.roma.exceptions.RecursoNoEncontradoException;
 import com.russo.roma.model.usuarios.Administrador;
 import com.russo.roma.model.usuarios.Cliente;
 import com.russo.roma.model.usuarios.Mozo;
@@ -38,7 +39,8 @@ public class UsuarioService implements IUsuarioServices{
 
     private IGestor<Administrador, Integer> adminRepository;
 
-    private static final String MENSAJE_NO_ENCONTRADO = "No se encontró el usuario";
+    private static final String MENSAJE_NO_ENCONTRADO_USUARIO = "No se encontró el usuario";
+    private static final String MENSAJE_NO_ENCONTRADO_TOKEN = "No se encontró el token";
 
     @Value("${russo.app.dominio}")
     private String DOMINIO;
@@ -61,7 +63,9 @@ public class UsuarioService implements IUsuarioServices{
     @Override
     @Transactional
     public void confirmarCuenta(String token) {
-        TokenVerificacion tokenVerificacion = tokenRepo.buscarPorToken(token);
+        TokenVerificacion tokenVerificacion = tokenRepo.buscarPorToken(token)
+            .orElseThrow(()-> new RecursoNoEncontradoException(MENSAJE_NO_ENCONTRADO_TOKEN));
+
         Usuario usuario = usuarioRepository.buscarPorId(tokenVerificacion.getUsuarioId()).orElseThrow();
 
         if (tokenVerificacion.getFechaExpiracion().isAfter(LocalDateTime.now()) && 
@@ -79,7 +83,7 @@ public class UsuarioService implements IUsuarioServices{
     @Override
     public void darBajaUsuario(Integer idUsuario) {
         Usuario usuario = usuarioRepository.buscarPorId(idUsuario).
-                            orElseThrow(()-> new IllegalArgumentException(MENSAJE_NO_ENCONTRADO));
+                            orElseThrow(()-> new RecursoNoEncontradoException(MENSAJE_NO_ENCONTRADO_USUARIO));
         
         usuario.setActivo(false);
         usuarioRepository.modificar(usuario);
@@ -88,7 +92,9 @@ public class UsuarioService implements IUsuarioServices{
     @Override
     @Transactional
     public void restablecerContrasena(String token, String contrasena) {
-        TokenVerificacion tokenVerificacion = tokenRepo.buscarPorToken(token);
+        TokenVerificacion tokenVerificacion = tokenRepo.buscarPorToken(token)
+            .orElseThrow(()-> new RecursoNoEncontradoException(MENSAJE_NO_ENCONTRADO_TOKEN));
+
         Usuario usuario = usuarioRepository.buscarPorId(tokenVerificacion.getUsuarioId()).orElseThrow();
 
         if (tokenVerificacion.getFechaExpiracion().isAfter(LocalDateTime.now()) &&
@@ -104,7 +110,7 @@ public class UsuarioService implements IUsuarioServices{
     @Override
     public void activarUsuario(Integer idUsuario) {
         Usuario usuario = usuarioRepository.buscarPorId(idUsuario).
-                            orElseThrow(()-> new IllegalArgumentException(MENSAJE_NO_ENCONTRADO));
+                            orElseThrow(()-> new RecursoNoEncontradoException(MENSAJE_NO_ENCONTRADO_USUARIO));
         usuario.setActivo(true);
         usuarioRepository.modificar(usuario);
     }
@@ -115,7 +121,7 @@ public class UsuarioService implements IUsuarioServices{
     @Override
     public void hacerAdmin(Integer idUsuario) {
         usuarioRepository.buscarPorId(idUsuario).
-                        orElseThrow(()-> new IllegalArgumentException(MENSAJE_NO_ENCONTRADO));
+                        orElseThrow(()-> new RecursoNoEncontradoException(MENSAJE_NO_ENCONTRADO_USUARIO));
         Administrador admin = new Administrador();
         admin.setId(idUsuario);
         adminRepository.alta(admin);
@@ -127,7 +133,7 @@ public class UsuarioService implements IUsuarioServices{
     @Override
     public void hacerMozo(Integer idUsuario) {
         usuarioRepository.buscarPorId(idUsuario)
-                        .orElseThrow(()-> new IllegalArgumentException(MENSAJE_NO_ENCONTRADO));
+                        .orElseThrow(()-> new RecursoNoEncontradoException(MENSAJE_NO_ENCONTRADO_USUARIO));
         Mozo mozo = new Mozo();
         mozo.setId(idUsuario);
         mozoRepository.alta(mozo);
@@ -135,18 +141,17 @@ public class UsuarioService implements IUsuarioServices{
     }
 
     @Override
-    public Optional<UsuarioDTO> buscarUsuarioPorId(Integer idUsuario) {
-        Optional<Usuario> usuarioOpt = usuarioRepository.buscarPorId(idUsuario);
-        UsuarioDTO usuarioDto = null;
-        if (usuarioOpt.isPresent()) {
-            Usuario usuario = usuarioOpt.get();
-            usuarioDto = new UsuarioDTO(usuario.getId(),
-                                        usuario.getNombres(),
-                                        usuario.getApellidos(),
-                                        usuario.getEmail(),
-                                        usuario.isActivo());
-        }
-        return Optional.ofNullable(usuarioDto);
+    public UsuarioDTO buscarUsuarioPorId(Integer idUsuario) {
+        Usuario usuario = usuarioRepository.buscarPorId(idUsuario)
+            .orElseThrow(()-> new RecursoNoEncontradoException(MENSAJE_NO_ENCONTRADO_USUARIO));
+        
+        UsuarioDTO usuarioDto = new UsuarioDTO(usuario.getId(),
+                                    usuario.getNombres(),
+                                    usuario.getApellidos(),
+                                    usuario.getEmail(),
+                                    usuario.isActivo());
+        
+        return usuarioDto;
     }
 
     @Override
@@ -162,14 +167,14 @@ public class UsuarioService implements IUsuarioServices{
     @Override
     public void borrarUsuario(Integer id) {
         Usuario u = usuarioRepository.buscarPorId(id)
-            .orElseThrow(()-> new IllegalArgumentException(MENSAJE_NO_ENCONTRADO));
+            .orElseThrow(()-> new IllegalArgumentException(MENSAJE_NO_ENCONTRADO_USUARIO));
         usuarioRepository.borrar(u);
     }
 
     @Override
     public void modificarUsuario(Integer id,Usuario usuario) {
         Usuario u = usuarioRepository.buscarPorId(id)
-            .orElseThrow(()-> new IllegalArgumentException(MENSAJE_NO_ENCONTRADO));
+            .orElseThrow(()-> new IllegalArgumentException(MENSAJE_NO_ENCONTRADO_USUARIO));
         
         usuario.setPassword(u.getPassword()); //evita que se pueda modificar la contraseña
         usuario.setActivo(u.isActivo()); //evita que se pueda modificar el estado.
@@ -209,7 +214,7 @@ public class UsuarioService implements IUsuarioServices{
     @Transactional
     public void crearTokenCambioContrasena(String emailusuario){
         Usuario usuario = usuarioRepository.buscarPorEmail(emailusuario)
-            .orElseThrow(()->new IllegalArgumentException("El email no está registrado"));
+            .orElseThrow(()->new RecursoNoEncontradoException("El email no está registrado"));
 
         TokenVerificacion token = new TokenVerificacion();
         token.setFechaExpiracion(LocalDateTime.now().plusMinutes(30));

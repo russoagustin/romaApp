@@ -66,8 +66,8 @@ public class UsuariosController {
 
     @GetMapping("/{id}")
     public ResponseEntity<UsuarioDTO> buscarPorId(@PathVariable Integer id){
-        Optional<UsuarioDTO> usuarioOpt = usuarioService.buscarUsuarioPorId(id);
-        return usuarioOpt.isPresent() ? ResponseEntity.ok().body(usuarioOpt.get()) : ResponseEntity.notFound().build();
+        UsuarioDTO usuarioDto = usuarioService.buscarUsuarioPorId(id);
+        return ResponseEntity.ok().body(usuarioDto);
     }
 
     @PatchMapping("/{id}/mozo")
