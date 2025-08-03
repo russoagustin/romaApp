@@ -3,7 +3,6 @@ package com.russo.roma.services.impl;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 import java.util.UUID;
 
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -176,6 +175,7 @@ public class UsuarioService implements IUsuarioServices{
         Usuario u = usuarioRepository.buscarPorId(id)
             .orElseThrow(()-> new IllegalArgumentException(MENSAJE_NO_ENCONTRADO_USUARIO));
         
+        usuario.setId(u.getId());
         usuario.setPassword(u.getPassword()); //evita que se pueda modificar la contraseña
         usuario.setActivo(u.isActivo()); //evita que se pueda modificar el estado.
     

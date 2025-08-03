@@ -1,7 +1,6 @@
 package com.russo.roma.services.interfaces;
 
 import java.util.List;
-import java.util.Optional;
 
 import com.russo.roma.dto.UsuarioDTO;
 import com.russo.roma.model.usuarios.Usuario;
