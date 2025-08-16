@@ -15,16 +15,23 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.www.BasicAuthenticationFilter;
+
+import com.russo.roma.config.filters.JwtTokenValidator;
 
 @Configuration
 @EnableWebSecurity
 @EnableMethodSecurity
 public class SecurityConfig {
 
-    AuthenticationConfiguration authenticationConfiguration;
 
-    public SecurityConfig(AuthenticationConfiguration authenticationConfiguration){
+    private AuthenticationConfiguration authenticationConfiguration;
+
+    private JwtTokenValidator jwtTokenValidator;
+
+    public SecurityConfig(AuthenticationConfiguration authenticationConfiguration, JwtTokenValidator jwtTokenValidator){
         this.authenticationConfiguration = authenticationConfiguration;
+        this.jwtTokenValidator = jwtTokenValidator;
     }
 
     @Bean
@@ -33,6 +40,11 @@ public class SecurityConfig {
             .csrf(csrf->csrf.disable())
             .httpBasic(Customizer.withDefaults())
             .sessionManagement(session-> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+            .authorizeHttpRequests(http -> {
+                http
+                    .anyRequest().permitAll();
+            })
+            .addFilterBefore(jwtTokenValidator, BasicAuthenticationFilter.class)
             .build();
     }
 
@@ -49,6 +61,7 @@ public class SecurityConfig {
     }
 
 
+    @Bean
     public PasswordEncoder passwordEncoder(){
         return new BCryptPasswordEncoder();
     }

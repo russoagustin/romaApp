@@ -7,6 +7,7 @@ import java.util.UUID;
 
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -27,6 +28,9 @@ import com.russo.roma.services.interfaces.IUsuarioServices;
 public class UsuarioService implements IUsuarioServices{
 
     private IUsuarioRepository usuarioRepository;
+
+    private final PasswordEncoder passwordEncoder;
+
     private TokenVerificacionRepository tokenRepo;
 
     
@@ -45,6 +49,7 @@ public class UsuarioService implements IUsuarioServices{
     private String DOMINIO;
 
     public UsuarioService(IUsuarioRepository usuarioRepository, 
+                    PasswordEncoder passwordEncoder,
                     TokenVerificacionRepository tokenRepo,
                     EmailService email,
                     @Qualifier("clienteRepository") IGestor<Cliente, Integer> clienteRepository,
@@ -57,6 +62,7 @@ public class UsuarioService implements IUsuarioServices{
         this.mozoRepository = mozoRepository;
         this.adminRepository = adminRepository;
         this.emailService = email;
+        this.passwordEncoder = passwordEncoder;
     }
 
     @Override
@@ -186,6 +192,7 @@ public class UsuarioService implements IUsuarioServices{
     @Transactional
     public Integer altaUsuario(Usuario usuario) {
         usuario.setActivo(false);
+        usuario.setPassword(passwordEncoder.encode(usuario.getPassword()));
         Integer usuarioId = usuarioRepository.alta(usuario);
 
         // agrego el rol cliente al nuevo usuario

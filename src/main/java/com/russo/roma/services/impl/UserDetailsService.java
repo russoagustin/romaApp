@@ -14,7 +14,7 @@ import com.russo.roma.repositories.interfaces.IUsuarioRepository;
 
 @Service
 public class UserDetailsService implements org.springframework.security.core.userdetails.UserDetailsService{
-
+ 
     private IUsuarioRepository usuarioRepo;
 
     public UserDetailsService(IUsuarioRepository usuarioRepo){
