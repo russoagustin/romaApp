@@ -1,20 +1,22 @@
 package com.russo.roma.config.filters;
 
 import java.io.IOException;
-import java.util.Collection;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
 import org.springframework.lang.NonNull;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.core.authority.AuthorityUtils;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
+import com.auth0.jwt.exceptions.JWTVerificationException;
 import com.auth0.jwt.interfaces.DecodedJWT;
+import com.russo.roma.model.usuarios.CustomUserDetails;
+import com.russo.roma.services.impl.UserDetailsService;
 import com.russo.roma.utils.JwtUtils;
 
 import jakarta.servlet.FilterChain;
@@ -27,6 +29,8 @@ public class JwtTokenValidator extends OncePerRequestFilter{
 
 
     private JwtUtils jwtUtils;
+    @Autowired
+    private UserDetailsService detailsService;
 
     public JwtTokenValidator(JwtUtils jwtUtils){
         this.jwtUtils = jwtUtils;
@@ -39,16 +43,24 @@ public class JwtTokenValidator extends OncePerRequestFilter{
     {
         String jwtToken = request.getHeader(HttpHeaders.AUTHORIZATION);
 
-        if (jwtToken != null) {
+        if (jwtToken != null && jwtToken.startsWith("Bearer ")) {
             jwtToken = jwtToken.substring(7);
+            DecodedJWT decodedJWT;
 
-            DecodedJWT decodedJWT = jwtUtils.validarToken(jwtToken);
+            try {
+                decodedJWT = jwtUtils.validarToken(jwtToken);    
+            } catch (JWTVerificationException e) {
+                response.setStatus(HttpStatus.UNAUTHORIZED.value());
+                response.setContentType("application/json");
+                response.getWriter().write("{\"error\": \"" + e.getMessage() + "\"}");
+                return;
+            }
+            
             String email = jwtUtils.obtenerEmail(decodedJWT);
-            String stringAuthorities = jwtUtils.obtenerAuthorities(decodedJWT).asString();
+            CustomUserDetails userDetails = detailsService.loadUserByUsername(email);
 
-            Collection<? extends GrantedAuthority> authorities = AuthorityUtils.commaSeparatedStringToAuthorityList(stringAuthorities);
             SecurityContext context = SecurityContextHolder.getContext();
-            Authentication authentication = new UsernamePasswordAuthenticationToken(email, null,authorities);
+            Authentication authentication = new UsernamePasswordAuthenticationToken(userDetails, null,userDetails.getAuthorities());
 
             context.setAuthentication(authentication);
 

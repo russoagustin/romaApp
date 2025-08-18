@@ -1,4 +1,4 @@
-package com.russo.roma.controllers;
+package com.russo.roma.dto;
 
 public record PeticionLoginDto(
     String email,

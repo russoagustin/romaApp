@@ -1,4 +1,4 @@
-package com.russo.roma.config;
+package com.russo.roma.config.securityConfig;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -35,7 +35,7 @@ public class SecurityConfig {
     }
 
     @Bean
-    public SecurityFilterChain securityFilterChain(HttpSecurity httpSecurity) throws Exception{
+    public SecurityFilterChain securityFilterChain(HttpSecurity httpSecurity, CustomAccessDeniedHandler accessDeniedHandler, CustomAuthenticationEntryPoint authEntryPoint) throws Exception{
         return httpSecurity
             .csrf(csrf->csrf.disable())
             .httpBasic(Customizer.withDefaults())
@@ -44,6 +44,12 @@ public class SecurityConfig {
                 http
                     .anyRequest().permitAll();
             })
+            .exceptionHandling(ex -> 
+                ex
+                    .accessDeniedHandler(accessDeniedHandler)
+                    .authenticationEntryPoint(authEntryPoint)
+            )
+
             .addFilterBefore(jwtTokenValidator, BasicAuthenticationFilter.class)
             .build();
     }

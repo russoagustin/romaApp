@@ -53,6 +53,7 @@ public class UsuariosController {
     }
 
     @PutMapping("/{id}")
+    @PreAuthorize(" isAuthenticated() && #id == principal.getId()")
     public ResponseEntity<Void> modificarUsuario(@RequestBody Usuario usuario, @PathVariable Integer id){
         usuarioService.modificarUsuario(id, usuario);
         return ResponseEntity.noContent().build();

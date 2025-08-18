@@ -59,9 +59,9 @@ public class JwtUtils {
                 .build()
                 .verify(jwt);
         } catch (TokenExpiredException e) {
-            throw new RuntimeException("Token Expirado");
+            throw new JWTVerificationException("Token Expirado");
         } catch (JWTVerificationException e){
-            throw new RuntimeException("Token Inválido");
+            throw new JWTVerificationException("Token Inválido");
         }
         
     }

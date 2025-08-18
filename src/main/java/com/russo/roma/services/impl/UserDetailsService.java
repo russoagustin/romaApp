@@ -4,11 +4,10 @@ import java.util.HashSet;
 import java.util.Set;
 
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
-import org.springframework.security.core.userdetails.User;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
+import com.russo.roma.model.usuarios.CustomUserDetails;
 import com.russo.roma.model.usuarios.Usuario;
 import com.russo.roma.repositories.interfaces.IUsuarioRepository;
 
@@ -22,7 +21,7 @@ public class UserDetailsService implements org.springframework.security.core.use
     }
 
     @Override
-    public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
+    public CustomUserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
         Usuario usuario = usuarioRepo.buscarPorEmail(email)
             .orElseThrow(()-> new UsernameNotFoundException("El email: "+ email + " no está registrado"));
 
@@ -32,13 +31,12 @@ public class UserDetailsService implements org.springframework.security.core.use
             authorities.add(new SimpleGrantedAuthority(r.name()));
         });
 
-        User user = new User(email, 
+        CustomUserDetails user = new CustomUserDetails(usuario.getId(),
+            email, 
             usuario.getPassword(), 
-            usuario.isActivo(), 
-            true, 
-            true, 
-            true, 
-            authorities);
+            authorities,
+            usuario.isActivo()
+            );
             
         return user;
     }
