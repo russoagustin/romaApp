@@ -21,7 +21,7 @@ public class UsuarioRepository implements IUsuarioRepository{
     private static final String BUSQUEDA_ID = "SELECT * FROM usuarios WHERE id = ?";
 
     // insertar usuario
-    private static final String INSERTAR = "INSERT INTO usuarios (nombres,apellidos,email,contrasena,fecha_nac, activo) VALUES (?,?,?,md5(?),?,?)";
+    private static final String INSERTAR = "INSERT INTO usuarios (nombres,apellidos,email,contrasena,fecha_nac, activo) VALUES (?,?,?,?,?,?)";
 
     // buscar por nonmbre
     private static final String BUSQUEDA_NOMBRE = "SELECT * FROM usuarios WHERE nombres LIKE ?";
@@ -30,7 +30,7 @@ public class UsuarioRepository implements IUsuarioRepository{
     private static final String BORRAR = "DELETE FROM usuarios WHERE id = ?";
 
     // modificar usuario
-    private static final String MODIFICAR = "UPDATE usuarios SET nombres = ?, apellidos = ?, email = ?, contrasena = md5(?), activo = ?, fecha_nac = ? WHERE id = ?";
+    private static final String MODIFICAR = "UPDATE usuarios SET nombres = ?, apellidos = ?, email = ?, contrasena = ?, activo = ?, fecha_nac = ? WHERE id = ?";
 
 
     private static final String BUSCAR_EMAIL = "SELECT id FROM usuarios WHERE email = ?";

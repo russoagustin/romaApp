@@ -24,7 +24,7 @@ public class TokenVerificacionRepository implements ITokenVerificacionRepository
     private static final String ALTA = "INSERT INTO verificacion_tokens (token,usuario_id,fecha_expiracion, tipo) VALUES (?,?,?,?)";
     private static final String BUSCAR_USUARIO = "SELECT * FROM verificacion_tokens WHERE usuario_id = ? ORDER BY fecha_expiracion DESC LIMIT 1";
     private static final String BUSCAR_TOKEN = "SELECT * FROM verificacion_tokens WHERE token = ?";
-    private static final String MODIFICAR_TOKEN = "UPDATE verificacion_tokens SET usado = 1, WHERE token = ?";
+    private static final String MODIFICAR_TOKEN = "UPDATE verificacion_tokens SET usado = 1 WHERE token = ?";
 
     RowMapper<TokenVerificacion> rowMapper = ((rs,rowNum)-> new TokenVerificacion(
         rs.getInt("id"),

@@ -4,6 +4,7 @@ import java.net.URI;
 import java.util.List;
 
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
@@ -52,6 +53,7 @@ public class UsuariosController {
     }
 
     @PutMapping("/{id}")
+    @PreAuthorize(" isAuthenticated() && #id == principal.getId()")
     public ResponseEntity<Void> modificarUsuario(@RequestBody Usuario usuario, @PathVariable Integer id){
         usuarioService.modificarUsuario(id, usuario);
         return ResponseEntity.noContent().build();
@@ -70,12 +72,14 @@ public class UsuariosController {
     }
 
     @PatchMapping("/{id}/mozo")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Void> hacerMozo(@PathVariable Integer id){
         usuarioService.hacerMozo(id);
         return ResponseEntity.noContent().build();
     }
 
     @PatchMapping("/{id}/admin")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Void> hacerAdmin(@PathVariable Integer id){
         usuarioService.hacerAdmin(id);
         return ResponseEntity.noContent().build();
