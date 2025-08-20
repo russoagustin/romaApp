@@ -21,6 +21,7 @@ import com.russo.roma.model.usuarios.Usuario;
 import com.russo.roma.repositories.impl.TokenVerificacionRepository;
 import com.russo.roma.repositories.interfaces.IGestor;
 import com.russo.roma.repositories.interfaces.IUsuarioRepository;
+import com.russo.roma.services.interfaces.IEmailService;
 import com.russo.roma.services.interfaces.IUsuarioServices;
 
 
@@ -34,7 +35,7 @@ public class UsuarioService implements IUsuarioServices{
     private TokenVerificacionRepository tokenRepo;
 
     
-    private EmailService emailService;
+    private IEmailService emailService;
     
     private IGestor<Cliente, Integer> clienteRepository;
 
@@ -51,7 +52,7 @@ public class UsuarioService implements IUsuarioServices{
     public UsuarioService(IUsuarioRepository usuarioRepository, 
                     PasswordEncoder passwordEncoder,
                     TokenVerificacionRepository tokenRepo,
-                    EmailService email,
+                    IEmailService email,
                     @Qualifier("clienteRepository") IGestor<Cliente, Integer> clienteRepository,
                     @Qualifier("mozoRepository") IGestor<Mozo, Integer> mozoRepository,
                     @Qualifier("administradorRepository") IGestor<Administrador, Integer> adminRepository) {

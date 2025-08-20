@@ -2,6 +2,7 @@ package com.russo.roma.services.impl;
 
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
 import com.russo.roma.services.interfaces.IEmailService;
@@ -16,6 +17,7 @@ public class EmailService implements IEmailService {
     }
 
     @Override
+    @Async
     public void enviarEmail(String destino, String asunto, String Contenido){
         SimpleMailMessage message = new SimpleMailMessage();
         message.setTo(destino);
