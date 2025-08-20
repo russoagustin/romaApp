@@ -37,7 +37,7 @@ public class UsuarioRepository implements IUsuarioRepository{
 
     private static final String BUSQUEDA_EMAIL = "SELECT * FROM usuarios WHERE email = ?";
 
-    private JdbcTemplate jdbcTemplate;
+    private final JdbcTemplate jdbcTemplate;
     // inyección de dependencias
     public UsuarioRepository(JdbcTemplate jdbc){
         this.jdbcTemplate = jdbc;

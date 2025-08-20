@@ -19,7 +19,7 @@ public class AdministradorRepository implements IGestor<Administrador,Integer>{
 
     private static final String BORRAR = "DELETE FROM administradores WHERE usuario_id = ?";
 
-    private JdbcTemplate jdbcTemplate;
+    private final JdbcTemplate jdbcTemplate;
 
     public AdministradorRepository(JdbcTemplate jdbcTemplate){
         this.jdbcTemplate = jdbcTemplate;

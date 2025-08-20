@@ -25,9 +25,9 @@ import com.russo.roma.config.filters.JwtTokenValidator;
 public class SecurityConfig {
 
 
-    private AuthenticationConfiguration authenticationConfiguration;
+    private final AuthenticationConfiguration authenticationConfiguration;
 
-    private JwtTokenValidator jwtTokenValidator;
+    private final JwtTokenValidator jwtTokenValidator;
 
     public SecurityConfig(AuthenticationConfiguration authenticationConfiguration, JwtTokenValidator jwtTokenValidator){
         this.authenticationConfiguration = authenticationConfiguration;
@@ -35,7 +35,7 @@ public class SecurityConfig {
     }
 
     @Bean
-    public SecurityFilterChain securityFilterChain(HttpSecurity httpSecurity, CustomAccessDeniedHandler accessDeniedHandler, CustomAuthenticationEntryPoint authEntryPoint) throws Exception{
+    SecurityFilterChain securityFilterChain(HttpSecurity httpSecurity, CustomAccessDeniedHandler accessDeniedHandler, CustomAuthenticationEntryPoint authEntryPoint) throws Exception{
         return httpSecurity
             .csrf(csrf->csrf.disable())
             .httpBasic(Customizer.withDefaults())
@@ -55,12 +55,12 @@ public class SecurityConfig {
     }
 
     @Bean
-    public AuthenticationManager authenticationManager() throws Exception{
+    AuthenticationManager authenticationManager() throws Exception{
         return authenticationConfiguration.getAuthenticationManager();
     }
 
     @Bean
-    public AuthenticationProvider authenticationProvider(UserDetailsService details){
+    AuthenticationProvider authenticationProvider(UserDetailsService details){
         DaoAuthenticationProvider authProvider = new DaoAuthenticationProvider(details);
         authProvider.setPasswordEncoder(passwordEncoder());
         return authProvider;
@@ -68,7 +68,7 @@ public class SecurityConfig {
 
 
     @Bean
-    public PasswordEncoder passwordEncoder(){
+    PasswordEncoder passwordEncoder(){
         return new BCryptPasswordEncoder(10);
     }
 }

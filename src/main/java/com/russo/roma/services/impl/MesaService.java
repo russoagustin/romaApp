@@ -14,7 +14,7 @@ public class MesaService implements IMesaService{
 
     private static final String NO_ENCONTRADO = "No se encontró la mesa con el numero: ";
 
-    IMesasRepository mesasRepo;
+    private final IMesasRepository mesasRepo;
 
     public MesaService(IMesasRepository mesasRepo){
         this.mesasRepo = mesasRepo;

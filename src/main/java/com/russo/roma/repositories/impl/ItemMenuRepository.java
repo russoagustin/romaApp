@@ -27,7 +27,7 @@ public class ItemMenuRepository implements IitemMenuRepository{
     
     private static final String BORRAR_ITEM = "DELETE FROM items_menu WHERE id = ?";
 
-    private JdbcTemplate jdbcTemplate;
+    private final JdbcTemplate jdbcTemplate;
 
     public ItemMenuRepository(JdbcTemplate jdbcTemplate){
         this.jdbcTemplate = jdbcTemplate;

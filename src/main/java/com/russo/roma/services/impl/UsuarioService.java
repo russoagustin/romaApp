@@ -28,20 +28,20 @@ import com.russo.roma.services.interfaces.IUsuarioServices;
 @Service
 public class UsuarioService implements IUsuarioServices{
 
-    private IUsuarioRepository usuarioRepository;
+    private final IUsuarioRepository usuarioRepository;
 
     private final PasswordEncoder passwordEncoder;
 
-    private TokenVerificacionRepository tokenRepo;
+    private final TokenVerificacionRepository tokenRepo;
 
     
-    private IEmailService emailService;
+    private final IEmailService emailService;
     
-    private IGestor<Cliente, Integer> clienteRepository;
+    private final IGestor<Cliente, Integer> clienteRepository;
 
-    private IGestor<Mozo, Integer> mozoRepository;
+    private final IGestor<Mozo, Integer> mozoRepository;
 
-    private IGestor<Administrador, Integer> adminRepository;
+    private final IGestor<Administrador, Integer> adminRepository;
 
     private static final String MENSAJE_NO_ENCONTRADO_USUARIO = "No se encontró el usuario";
     private static final String MENSAJE_NO_ENCONTRADO_TOKEN = "No se encontró el token";

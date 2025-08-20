@@ -22,7 +22,7 @@ public class ClienteRepository implements IGestor<Cliente, Integer>{
 
     private static final String BORRAR = "DELETE FROM clientes WHERE usuario_id = ?";
 
-    private JdbcTemplate jdbcTemplate;
+    private final JdbcTemplate jdbcTemplate;
 
     public ClienteRepository(JdbcTemplate jdbcTemplate){
         this.jdbcTemplate = jdbcTemplate;

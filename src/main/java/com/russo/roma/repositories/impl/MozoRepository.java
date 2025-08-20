@@ -19,7 +19,7 @@ public class MozoRepository implements IGestor<Mozo,Integer>{
 
     private static final String BORRAR = "DELETE FROM mozos WHERE usuario_id = ?";
 
-    private JdbcTemplate jdbcTemplate;
+    private final JdbcTemplate jdbcTemplate;
 
     public MozoRepository(JdbcTemplate jdbcTemplate){
         this.jdbcTemplate = jdbcTemplate;

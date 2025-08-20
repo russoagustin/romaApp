@@ -2,7 +2,6 @@ package com.russo.roma.config.filters;
 
 import java.io.IOException;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.lang.NonNull;
@@ -28,12 +27,13 @@ import jakarta.servlet.http.HttpServletResponse;
 public class JwtTokenValidator extends OncePerRequestFilter{
 
 
-    private JwtUtils jwtUtils;
-    @Autowired
-    private UserDetailsService detailsService;
+    private final JwtUtils jwtUtils;
 
-    public JwtTokenValidator(JwtUtils jwtUtils){
+    private final UserDetailsService detailsService;
+
+    public JwtTokenValidator(JwtUtils jwtUtils, UserDetailsService detailsService){
         this.jwtUtils = jwtUtils;
+        this.detailsService = detailsService;
     }
 
     @Override

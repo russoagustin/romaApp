@@ -24,7 +24,7 @@ public class MesaRepository implements IMesasRepository{
 
     private static final String BORRAR  = "DELETE FROM mesas WHERE numero = ?";
 
-    private JdbcTemplate jdbcTemplate;
+    private final JdbcTemplate jdbcTemplate;
 
     public MesaRepository(JdbcTemplate jdbcTemplate){
         this.jdbcTemplate = jdbcTemplate;

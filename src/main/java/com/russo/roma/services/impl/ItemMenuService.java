@@ -12,7 +12,7 @@ import com.russo.roma.services.interfaces.IitemMenuService;
 @Service
 public class ItemMenuService implements IitemMenuService{
 
-    private IitemMenuRepository itemRepo;
+    private final IitemMenuRepository itemRepo;
 
     private String MENSAJE_NO_ENCONTRADO = "No se encontró el item de menú";
 

@@ -15,7 +15,7 @@ import com.russo.roma.repositories.interfaces.ITokenVerificacionRepository;
 @Repository
 public class TokenVerificacionRepository implements ITokenVerificacionRepository{
 
-    private JdbcTemplate jdbcTemplate;
+    private final JdbcTemplate jdbcTemplate;
 
     public TokenVerificacionRepository(JdbcTemplate jdbcTemplate){
         this.jdbcTemplate = jdbcTemplate;
