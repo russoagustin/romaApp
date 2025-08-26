@@ -20,6 +20,7 @@ import com.russo.roma.model.usuarios.TokenVerificacion;
 import com.russo.roma.model.usuarios.Usuario;
 import com.russo.roma.repositories.impl.TokenVerificacionRepository;
 import com.russo.roma.repositories.interfaces.IGestor;
+import com.russo.roma.repositories.interfaces.ITokenVerificacionRepository;
 import com.russo.roma.repositories.interfaces.IUsuarioRepository;
 import com.russo.roma.services.interfaces.IEmailService;
 import com.russo.roma.services.interfaces.IUsuarioServices;
@@ -32,7 +33,7 @@ public class UsuarioService implements IUsuarioServices{
 
     private final PasswordEncoder passwordEncoder;
 
-    private final TokenVerificacionRepository tokenRepo;
+    private final ITokenVerificacionRepository tokenRepo;
 
     
     private final IEmailService emailService;
@@ -74,8 +75,7 @@ public class UsuarioService implements IUsuarioServices{
 
         Usuario usuario = usuarioRepository.buscarPorId(tokenVerificacion.getUsuarioId()).orElseThrow();
 
-        if (tokenVerificacion.getFechaExpiracion().isAfter(LocalDateTime.now()) && 
-            tokenVerificacion.getTipo().equals("VERIFICACION_EMAIL") && 
+        if (tokenVerificacion.getTipo().equals("VERIFICACION_EMAIL") && 
             !tokenVerificacion.getUsado()
         ) 
         {
@@ -205,7 +205,7 @@ public class UsuarioService implements IUsuarioServices{
         // Inserto el token para confirmar la cuenta por email
         TokenVerificacion token = new TokenVerificacion();
         token.setToken(UUID.randomUUID());
-        token.setFechaExpiracion(LocalDateTime.now().plusHours(24));
+        token.setFechaExpiracion(null);
         token.setUsuarioId(usuarioId);
         token.setTipo("VERIFICACION_EMAIL");
         tokenRepo.altaToken(token);

@@ -1,12 +1,10 @@
 package com.russo.roma;
 
 import java.time.LocalDateTime;
-import java.util.Map;
 
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.web.bind.MissingServletRequestParameterException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -14,8 +12,13 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import com.russo.roma.dto.ParametroFaltanteDto;
 import com.russo.roma.exceptions.RecursoNoEncontradoException;
 
+import io.swagger.v3.oas.annotations.Hidden;
+
+@Hidden
 @ControllerAdvice
 public class GlobalExceptionHandler {
+
+    public GlobalExceptionHandler(){}
 
     @ExceptionHandler(RecursoNoEncontradoException.class)
     public ResponseEntity<String> recursoNoEncontradoHandler(RecursoNoEncontradoException ex){
@@ -37,10 +40,4 @@ public class GlobalExceptionHandler {
         return ResponseEntity.badRequest().headers(ex.getHeaders()).body(body);
     }
 
-    @ExceptionHandler(BadCredentialsException.class)
-    public ResponseEntity<?> handleBadCredentials(BadCredentialsException ex) {
-        return ResponseEntity
-                .status(HttpStatus.UNAUTHORIZED)
-                .body(Map.of("error", "Correo o contraseña inválidos"));
-    }
 }

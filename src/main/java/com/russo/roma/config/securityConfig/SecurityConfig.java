@@ -4,7 +4,6 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.AuthenticationProvider;
-import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
@@ -18,6 +17,7 @@ import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.www.BasicAuthenticationFilter;
 
 import com.russo.roma.config.filters.JwtTokenValidator;
+import com.russo.roma.config.securityConfig.handlers.CustomAccessDeniedHandler;
 
 @Configuration
 @EnableWebSecurity
@@ -48,6 +48,7 @@ public class SecurityConfig {
                 ex
                     .accessDeniedHandler(accessDeniedHandler)
                     .authenticationEntryPoint(authEntryPoint)
+                    
             )
 
             .addFilterBefore(jwtTokenValidator, BasicAuthenticationFilter.class)
@@ -61,7 +62,7 @@ public class SecurityConfig {
 
     @Bean
     AuthenticationProvider authenticationProvider(UserDetailsService details){
-        DaoAuthenticationProvider authProvider = new DaoAuthenticationProvider(details);
+        CustomDaoAuthenticationProvider authProvider = new CustomDaoAuthenticationProvider(details);
         authProvider.setPasswordEncoder(passwordEncoder());
         return authProvider;
     }

@@ -9,4 +9,5 @@ public interface ITokenVerificacionRepository {
     public Optional<TokenVerificacion> buscarPorUsuarioId(Integer usuarioId);
     public Optional<TokenVerificacion> buscarPorToken(String token);
     public void altaToken(TokenVerificacion t);
+    public void marcarComoUsado(TokenVerificacion t);
 }

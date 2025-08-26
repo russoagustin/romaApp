@@ -62,6 +62,7 @@ public class TokenVerificacionRepository implements ITokenVerificacionRepository
         jdbcTemplate.update(ALTA, t.getToken().toString(),t.getUsuarioId(),t.getFechaExpiracion(),t.getTipo());
     }
 
+    @Override
     public void marcarComoUsado(TokenVerificacion t){
         jdbcTemplate.update(MODIFICAR_TOKEN, t.getToken().toString());
     }
