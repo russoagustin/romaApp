@@ -10,7 +10,9 @@ import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 
 import com.russo.roma.dto.ParametroFaltanteDto;
+import com.russo.roma.dto.RespuestaGenericaDto;
 import com.russo.roma.exceptions.RecursoNoEncontradoException;
+import com.russo.roma.exceptions.TokenVerificacionException;
 
 import io.swagger.v3.oas.annotations.Hidden;
 
@@ -21,8 +23,8 @@ public class GlobalExceptionHandler {
     public GlobalExceptionHandler(){}
 
     @ExceptionHandler(RecursoNoEncontradoException.class)
-    public ResponseEntity<String> recursoNoEncontradoHandler(RecursoNoEncontradoException ex){
-        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ex.getMessage());
+    public ResponseEntity<RespuestaGenericaDto> recursoNoEncontradoHandler(RecursoNoEncontradoException ex){
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new RespuestaGenericaDto(ex.getMessage()));
     }
 
     @ExceptionHandler(DataIntegrityViolationException.class)
@@ -38,6 +40,11 @@ public class GlobalExceptionHandler {
             LocalDateTime.now()
         );
         return ResponseEntity.badRequest().headers(ex.getHeaders()).body(body);
+    }
+
+    @ExceptionHandler(TokenVerificacionException.class)
+    public ResponseEntity<RespuestaGenericaDto> tokenExceptionHandler(TokenVerificacionException ex){
+        return ResponseEntity.badRequest().body(new RespuestaGenericaDto(ex.getMessage()));
     }
 
 }

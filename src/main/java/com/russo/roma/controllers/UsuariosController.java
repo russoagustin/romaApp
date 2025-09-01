@@ -19,9 +19,17 @@ import org.springframework.web.util.UriComponentsBuilder;
 
 import com.russo.roma.dto.PeticionRestablecerContraDto;
 import com.russo.roma.dto.ResetContrasenaDto;
+import com.russo.roma.dto.RespuestaGenericaDto;
 import com.russo.roma.dto.UsuarioDTO;
 import com.russo.roma.model.usuarios.Usuario;
 import com.russo.roma.services.interfaces.IUsuarioServices;
+
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.ExampleObject;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
 
 @RestController
 @RequestMapping("/api/usuarios")
@@ -60,6 +68,7 @@ public class UsuariosController {
     }
 
     @DeleteMapping("/{id}")
+    @PreAuthorize(" (isAuthenticated() && #id == principal.getId()) || hasRole('ADMIN')")
     public ResponseEntity<Void> borrarUsuario(@PathVariable Integer id){
         usuarioService.borrarUsuario(id);
         return ResponseEntity.noContent().build();
@@ -85,16 +94,75 @@ public class UsuariosController {
         return ResponseEntity.noContent().build();
     }
 
+    @Operation(
+        summary = "Solicitar restablecimiento de contraseña",
+        description = "Envía un correo electrónico con un enlace para restablecer la contraseña del usuario"
+    )
+    @ApiResponses(
+        value = {
+            @ApiResponse(
+                responseCode = "204"
+            ),
+            @ApiResponse(
+                responseCode = "404",
+                description = "El email no está registrado en la aplicación",
+                content = @Content(
+                    mediaType = "application/json",
+                    schema = @Schema(implementation = RespuestaGenericaDto.class),
+                    examples = @ExampleObject(
+                        value = """
+                                {
+                                    "mensaje": "El email no está registrado"
+                                }
+                                """
+                    )
+                )
+            )
+        }
+    )
     @PostMapping("/sol-restablecer")
     public ResponseEntity<Void> solicitarRestablecerContraseña(@RequestBody PeticionRestablecerContraDto resetSol){
         usuarioService.crearTokenCambioContrasena(resetSol.email());
         return ResponseEntity.noContent().build();
     }
 
+    @Operation(
+        summary = "Restablecer contraseña",
+        description = "Restablece la contraseña del usuario utilizando el token proporcionado"
+    )
+    @ApiResponses(
+        value = {
+            @ApiResponse(
+                responseCode = "200",
+                description = "Cambio correcto de contraseña",
+                content = @Content(
+                    mediaType = "application/json",
+                    schema = @Schema(implementation = RespuestaGenericaDto.class),
+                    examples = {
+                        @ExampleObject(
+                            value = """
+                            {
+                                "mensaje": "Se cambió correctamente la contraseña"
+                            }
+                            """
+                        )
+                    }
+                )
+            ),
+            @ApiResponse(
+                responseCode = "400",
+                description = "Token invalido, expirado o ya fue utilizado",
+                content = @Content(
+                    mediaType = "application/json",
+                    schema = @Schema(implementation = RespuestaGenericaDto.class)
+                )
+            )
+        }
+    )
     @PostMapping("/restablecer")
-    public ResponseEntity<String> resetContrasena(@RequestBody ResetContrasenaDto res){
+    public ResponseEntity<RespuestaGenericaDto> resetContrasena(@RequestBody ResetContrasenaDto res){
         usuarioService.restablecerContrasena(res.token(), res.nuevaContrasena());
-        return ResponseEntity.ok("Se cambió correctamente la contraseña");
+        return ResponseEntity.ok(new RespuestaGenericaDto("Se cambió correctamente la contraseña"));
     }
 
 }

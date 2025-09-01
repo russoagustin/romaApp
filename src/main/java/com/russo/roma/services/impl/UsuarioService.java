@@ -13,6 +13,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.russo.roma.dto.UsuarioDTO;
 import com.russo.roma.exceptions.RecursoNoEncontradoException;
+import com.russo.roma.exceptions.TokenVerificacionException;
 import com.russo.roma.model.usuarios.Administrador;
 import com.russo.roma.model.usuarios.Cliente;
 import com.russo.roma.model.usuarios.Mozo;
@@ -75,15 +76,16 @@ public class UsuarioService implements IUsuarioServices{
 
         Usuario usuario = usuarioRepository.buscarPorId(tokenVerificacion.getUsuarioId()).orElseThrow();
 
-        if (tokenVerificacion.getTipo().equals("VERIFICACION_EMAIL") && 
-            !tokenVerificacion.getUsado()
+        if (!tokenVerificacion.getTipo().equals("VERIFICACION_EMAIL") ||
+            tokenVerificacion.getUsado()
         ) 
         {
-            tokenVerificacion.setUsado(true);
-            tokenRepo.marcarComoUsado(tokenVerificacion);   //marcamos el token como usado.
-            usuario.setActivo(true);
-            usuarioRepository.modificar(usuario);           //activo el usuario
+            throw new TokenVerificacionException("Token Inválido");
         }
+
+        tokenRepo.marcarComoUsado(tokenVerificacion);   //marcamos el token como usado.
+        usuario.setActivo(true);
+        usuarioRepository.modificar(usuario);           //activo el usuario
     }
 
     @Override
@@ -103,14 +105,17 @@ public class UsuarioService implements IUsuarioServices{
 
         Usuario usuario = usuarioRepository.buscarPorId(tokenVerificacion.getUsuarioId()).orElseThrow();
 
-        if (tokenVerificacion.getFechaExpiracion().isAfter(LocalDateTime.now()) &&
-            tokenVerificacion.getTipo().equals("RESET_CONTRASENA") &&
-            !tokenVerificacion.getUsado()
-        ) 
-        {
-            usuario.setPassword(contrasena);
-            usuarioRepository.modificar(usuario);
+        if (tokenVerificacion.getFechaExpiracion().isBefore(LocalDateTime.now())) {
+            throw new TokenVerificacionException("Token expirado");
         }
+        if (!tokenVerificacion.getTipo().equals("RESET_CONTRASENA") || tokenVerificacion.getUsado()){
+            throw new TokenVerificacionException("Token inválido");
+        }
+
+        tokenRepo.marcarComoUsado(tokenVerificacion);   //marcamos el token como usado.
+        usuario.setPassword(contrasena);
+        usuarioRepository.modificar(usuario);
+        
     }
 
     @Override
@@ -156,7 +161,6 @@ public class UsuarioService implements IUsuarioServices{
                                     usuario.getApellidos(),
                                     usuario.getEmail(),
                                     usuario.isActivo());
-        
         return usuarioDto;
     }
 
@@ -173,7 +177,7 @@ public class UsuarioService implements IUsuarioServices{
     @Override
     public void borrarUsuario(Integer id) {
         Usuario u = usuarioRepository.buscarPorId(id)
-            .orElseThrow(()-> new IllegalArgumentException(MENSAJE_NO_ENCONTRADO_USUARIO));
+            .orElseThrow(()-> new RecursoNoEncontradoException(MENSAJE_NO_ENCONTRADO_USUARIO));
         usuarioRepository.borrar(u);
     }
 

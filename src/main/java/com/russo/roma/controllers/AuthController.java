@@ -61,7 +61,7 @@ public class AuthController {
                     {
                         @ExampleObject (
                             name = "Credenciales Inválidas",
-                            value = "{\"error\": \"Correo o contraseña inválidos\"}"
+                            value = "{\"error\": \"Correo o contraseña incorrectos\"}"
                         ),
                         @ExampleObject (
                             name = "Credenciales válidas pero usuario no activado",
